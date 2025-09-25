@@ -5,7 +5,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 // --- Importar Rutas ---
-const authRoutes = require('./routes/authRoutes');
+const authRoutes = require('./src/routes/authRoutes');
 // Por ahora, no necesitamos importar videoRoutes si hemos quitado las funciones de CRUD
 // Ya que la funcionalidad de video la haremos en Semana 2 y 3
 // const videoRoutes = require('./routes/videoRoutes'); 
