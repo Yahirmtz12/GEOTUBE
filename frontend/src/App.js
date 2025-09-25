@@ -1,89 +1,107 @@
 // frontend/src/App.js
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import AuthPage from './pages/AuthPage'; // Importa tu página de autenticación
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+import AuthPage from './pages/AuthPage';
+import Layout from './components/Layout'; // Nuevo componente Layout
+import HomePage from './pages/HomePage';
+import MyVideosPage from './pages/MyVideosPage'; // Hemos movido HomePage a su propio archivo
+// Importa tus páginas futuras aquí:
+
+
 import './App.css'; // Tus estilos globales
 
-// Un componente placeholder para la página de inicio
-const HomePage = ({ authToken, user, onLogout }) => {
-  // useEffect para cargar data de videos si authToken existe
-  // En las próximas semanas aquí cargaremos los videos por geolocalización
-  return (
-    <div style={{ padding: '20px' }}>
-      <h2>Bienvenido, {user ? user.username : 'Usuario'}!</h2>
-      <p>Este es el inicio de tu aplicación de visualización de videos.</p>
-      <p>Aquí se mostrarán los videos recomendados y la funcionalidad de búsqueda (¡próximamente!).</p>
-      <button onClick={onLogout} style={{ padding: '8px 12px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '20px' }}>Cerrar Sesión</button>
-    </div>
-  );
-};
+const API_URL = 'http://localhost:5000/api/auth'; // Asegúrate de que esta URL sea correcta
 
-function App() {
-  const [authToken, setAuthToken] = useState(localStorage.getItem('token'));
-  const [user, setUser] = useState(null); // Aquí podrías guardar más info del usuario si la API de login la devuelve
-  const navigate = useNavigate(); // Para redirigir desde App.js si el token cambia
+function AppContent() {
+    const [authToken, setAuthToken] = useState(localStorage.getItem('token'));
+    const [user, setUser] = useState(null); // Para guardar los detalles del usuario
+    const [loadingUser, setLoadingUser] = useState(true); // Estado de carga para el usuario
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    // Si el token cambia (ej. el usuario se loguea), redirigir a la página de inicio
-    if (authToken && !user) {
-      // En una aplicación real, harías una petición a /api/auth/me para obtener
-      // los detalles del usuario con el token, para mostrar "Bienvenido [nombre]".
-      // Por ahora, solo indicaremos que estamos logueados.
-      console.log('Usuario autenticado con token:', authToken);
-      setUser({ username: 'Registrado' }); // Placeholder
-      // navigate('/'); // Ya se redirige desde AuthPage al iniciar sesión
-    } else if (!authToken && user) {
-      // Si el token se elimina (logout), limpiar info del usuario
-      setUser(null);
-      navigate('/auth'); // Redirigir a la página de autenticación al cerrar sesión
+    // Función para obtener los detalles del usuario
+    const fetchUserData = async (token) => {
+        try {
+            setLoadingUser(true);
+            // --- CAMBIOS AQUÍ ---
+            const res = await axios.get(`${API_URL}/me`, {
+                headers: {
+                    // El header debe ser 'Authorization' y el valor 'Bearer <token>'
+                    'Authorization': `Bearer ${token}` 
+                }
+            });
+            // --------------------
+            setUser(res.data);
+        } catch (err) {
+            console.error('Error al obtener los datos del usuario:', err.response ? err.response.data : err.message);
+            localStorage.removeItem('token');
+            setAuthToken(null);
+            setUser(null);
+        } finally {
+            setLoadingUser(false);
+        }
+    };
+
+
+    useEffect(() => {
+        if (authToken) {
+            fetchUserData(authToken);
+        } else {
+            setUser(null);
+            setLoadingUser(false); // No hay token, no necesitamos cargar usuario
+            // No redirigir aquí para evitar bucles. AuthPage se encarga si no hay token.
+        }
+    }, [authToken]); // Se ejecuta cuando el token cambia
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        setAuthToken(null);
+        // setUser(null); // Se limpia en el useEffect
+        navigate('/auth'); // Redirigir a la página de autenticación al cerrar sesión
+    };
+
+    const handleLoginSuccess = (token) => {
+        localStorage.setItem('token', token);
+        setAuthToken(token);
+        navigate('/'); // Redirigir a la página de inicio después del login
+    };
+
+    // Muestra un loader mientras se carga la info del usuario
+    if (loadingUser && authToken) {
+        return <div className="loading-screen">Cargando usuario...</div>;
     }
-  }, [authToken, user, navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setAuthToken(null);
-    // setUser(null); // Esto se maneja en el useEffect
-    // navigate('/auth'); // Esto se maneja en el useEffect
-  };
-
-  return (
-    <div className="App">
-      <nav style={{ backgroundColor: '#282c34', padding: '10px 20px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '24px', fontWeight: 'bold' }}>GeoTube</Link>
-        <div>
-          {authToken ? (
-            <>
-              <span style={{ marginRight: '15px' }}>Bienvenido {user ? user.username : ''}!</span>
-              <button onClick={handleLogout} style={{ padding: '8px 12px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Cerrar Sesión</button>
-            </>
-          ) : (
-            <>
-              <Link to="/auth" style={{ color: 'white', textDecoration: 'none', marginRight: '15px' }}>Iniciar Sesión / Registrarse</Link>
-            </>
-          )}
-        </div>
-      </nav>
-
-      <div className="content">
-        <Routes>
-          {authToken ? (
-            <Route path="/" element={<HomePage authToken={authToken} user={user} onLogout={handleLogout} />} />
-          ) : (
-            <Route path="/" element={<AuthPage setAuthToken={setAuthToken} />} />
-          )}
-          <Route path="/auth" element={<AuthPage setAuthToken={setAuthToken} />} />
-          {/* Aquí irán las rutas para videos individuales, búsqueda, etc. en el futuro */}
-        </Routes>
-      </div>
-    </div>
-  );
+    return (
+        <Layout user={user} onLogout={handleLogout}>
+            <Routes>
+                {/* Si el usuario está autenticado, muestra estas rutas */}
+                {authToken ? (
+                    <>
+                        <Route path="/" element={<HomePage user={user} />} />
+                        <Route path="/my-videos" element={<MyVideosPage />} />
+                        <Route path="*" element={<HomePage user={user} />} /> 
+                    </>
+                ) : (
+                /* Si el usuario NO está autenticado, solo permite la ruta /auth */
+                    <>
+                        <Route path="/auth" element={<AuthPage setAuthToken={handleLoginSuccess} />} />
+                        {/* Cualquier otra ruta redirige a la página de autenticación */}
+                        <Route path="*" element={<AuthPage setAuthToken={handleLoginSuccess} />} />
+                    </>
+                )}
+            </Routes>
+        </Layout>
+    );
 }
 
-// Wrapper para usar useNavigate fuera de un componente Route
-const AppWrapper = () => (
-  <Router>
-    <App />
-  </Router>
-);
+// Wrapper para usar useNavigate y otros hooks de react-router-dom
+function App() {
+    return (
+        <Router>
+            <AppContent />
+        </Router>
+    );
+}
 
-export default AppWrapper;
+export default App;

@@ -3,13 +3,13 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-
-// --- Importar Rutas ---
+const locationRoutes = require('./src/routes/locationRoutes'); // <--- NUEVA IMPORTACIÓN
+const videoRoutes = require('./src/routes/videoRoutes'); 
 const authRoutes = require('./src/routes/authRoutes');
-// Por ahora, no necesitamos importar videoRoutes si hemos quitado las funciones de CRUD
-// Ya que la funcionalidad de video la haremos en Semana 2 y 3
-// const videoRoutes = require('./routes/videoRoutes'); 
+
+
 // --------------------
+console.log('authRoutes importado:', authRoutes); // <--- AÑADE ESTO
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -36,6 +36,8 @@ app.use('/api/auth', authRoutes); // Todas las rutas de autenticación irán baj
 // Las rutas de video las añadiremos en la Semana 2 cuando implementemos home y search
 // app.use('/api/videos', videoRoutes);
 // --------------------
+app.use('/api/location', locationRoutes); // <--- NUEVO USO DE RUTAS
+app.use('/api/videos', videoRoutes); // <--- NUEVO USO DE RUTAS
 
 // Ruta de prueba
 app.get('/', (req, res) => {

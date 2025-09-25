@@ -1,14 +1,25 @@
-// backend/routes/videoRoutes.js
+// backend/src/routes/videoRoutes.js
 const express = require('express');
-const { uploadVideo, getVideoById } = require('../controllers/videoController');
-const { protect } = require('../middleware/authMiddleware'); // Necesitaremos este middleware
+const { searchYoutubeVideos } = require('../utils/youtube');
 
 const router = express.Router();
 
-// Ruta protegida: Solo usuarios autenticados pueden subir videos
-router.post('/', protect, uploadVideo);
-router.get('/:id', getVideoById);
+router.get('/search', async (req, res) => {
+    // --- CAMBIO AQUÍ ---
+    // Recibimos searchTerm y location por separado
+    const { searchTerm, location, maxResults } = req.query;
 
-// (Más adelante, aquí irán las rutas para 'home videos' y 'search videos')
+    if (!searchTerm) {
+        return res.status(400).json({ message: 'Se requiere un término de búsqueda.' });
+    }
+
+    try {
+        const videos = await searchYoutubeVideos(searchTerm, location, maxResults ? parseInt(maxResults) : 10);
+        res.json(videos);
+    } catch (error) {
+        console.error('Error en el endpoint /videos/search:', error.message);
+        res.status(500).json({ message: 'Error del servidor al buscar videos.' });
+    }
+});
 
 module.exports = router;
