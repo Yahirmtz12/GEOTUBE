@@ -1,7 +1,7 @@
 // backend/models/User.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs'); // Para hashear contraseñas
-
+//Prueba
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
