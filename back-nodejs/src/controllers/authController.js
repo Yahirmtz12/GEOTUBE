@@ -1,7 +1,8 @@
 // backend/controllers/authController.js
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
-
+const { OAuth2Client } = require('google-auth-library'); // 👈 Importa la librería
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // Función auxiliar para generar JWT
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -9,6 +10,46 @@ const generateToken = (id) => {
     });
 };
 
+exports.googleLogin = async (req, res) => {
+    const { token } = req.body;
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const { name, email, sub: googleId } = ticket.getPayload();
+
+        let user = await User.findOne({ email });
+
+        // Si el usuario no existe, lo creamos
+        if (!user) {
+            user = await User.create({
+                username: name, // Usamos el nombre de Google como username
+                email: email,
+                // No guardamos contraseña, ya que es login de Google
+                // Opcional: podrías generar una contraseña aleatoria y segura
+                password: `google_${googleId}`, // Placeholder seguro
+                country: 'Desconocido', // O intenta obtenerlo de otra forma
+            });
+        }
+
+        // Si el usuario ya existe, generamos un token para él
+        const payload = { id: user._id };
+        const jwtToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30d' });
+
+        res.json({
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            country: user.country,
+            token: jwtToken,
+        });
+
+    } catch (error) {
+        console.error('Error de autenticación con Google en el backend:', error);
+        res.status(400).json({ message: 'Token de Google inválido.' });
+    }
+};
 // @desc    Registrar un nuevo usuario
 // @route   POST /api/auth/register
 // @access  Public

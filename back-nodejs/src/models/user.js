@@ -30,7 +30,32 @@ const userSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
-    }
+    },
+    history: [
+        {
+            videoId: {
+                type: String,
+                required: true,
+            },
+            title: { // Guardar el título también para no hacer una llamada extra a YT
+                type: String,
+                required: true,
+            },
+            thumbnail: { // Guardar la miniatura
+                type: String,
+                required: true,
+            },
+            channelTitle: { // Guardar el canal
+                type: String,
+                required: true,
+            },
+            watchedAt: {
+                type: Date,
+                default: Date.now,
+            },
+        },
+    ],
+}, { timestamps: true 
 });
 
 // Middleware de Mongoose: Hashear la contraseña antes de guardar el usuario

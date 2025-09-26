@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const locationRoutes = require('./src/routes/locationRoutes'); // <--- NUEVA IMPORTACIÓN
 const videoRoutes = require('./src/routes/videoRoutes'); 
 const authRoutes = require('./src/routes/authRoutes');
+const userRoutes = require('./src/routes/userRoutes'); // 👈 Nueva importación
 
 
 // --------------------
@@ -13,10 +14,10 @@ console.log('authRoutes importado:', authRoutes); // <--- AÑADE ESTO
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-// Middleware
 app.use(cors());
+// Middleware
 app.use(express.json());
+app.use('/api/users', userRoutes); // 👈 Usa las nuevas rutas de usuario
 
 // Conexión a la base de datos (este bloque ya lo tienes)
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/youtube_geo';

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { getUserLocation } from '../utils/location';
 import MapComponent from '../components/MapComponent'; // Importa el mapa
 import '../styles/ExplorePage.css'; // Crearemos este archivo de estilos
+import { addVideoToUserHistory } from '../utils/history'; // 👈 Importa la función
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -14,6 +15,10 @@ const ExplorePage = () => {
     const [locationName, setLocationName] = useState('tu ubicación');
     const [mapCenter, setMapCenter] = useState(null); // Estado para las coordenadas del mapa
 
+    const openVideoLink = (video) => {
+        addVideoToUserHistory(video); // 👈 Añade esta línea
+        window.open(`https://www.youtube.com/watch?v=${video.id}`, '_blank', 'noopener noreferrer');
+    };
     // Función para obtener videos, la envolvemos en useCallback para optimización
     const fetchVideosForLocation = useCallback(async (lat, lng) => {
         setLoading(true);
@@ -83,7 +88,13 @@ const ExplorePage = () => {
                 <div className="videos-list">
                     {videos.map(video => (
                         <div key={video.id} className="video-item">
-                            <a href={`https://www.youtube.com/watch?v=${video.id}`} target="_blank" rel="noopener noreferrer">
+                            {/* Modifica el onClick para llamar a openVideoLink con el objeto video */}
+                            <a
+                                href={`https://www.youtube.com/watch?v=${video.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => openVideoLink(video)} // 👈 Llama a la nueva función
+                            >
                                 <img src={video.thumbnail} alt={video.title} className="video-thumbnail-small" />
                                 <div className="video-info">
                                     <h4 className="video-title-small">{video.title}</h4>

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { getUserLocation } from '../utils/location';
 import { FaSearch,FaMapMarkedAlt } from 'react-icons/fa';
 import '../styles/HomePage.css';
+import { addVideoToUserHistory } from '../utils/history'; // 👈 Importa la función
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -66,7 +67,10 @@ const HomePage = ({ user }) => {
 
         fetchVideosByLocation();
     }, []); // Se ejecuta solo una vez al montar el componente
-
+    const openVideoLink = (video) => { // Ahora recibe el objeto video completo
+        addVideoToUserHistory(video); // 👈 Añade esta línea
+        window.open(`https://www.youtube.com/watch?v=${video.id}`, '_blank', 'noopener noreferrer');
+    };
     // Esta función ya está correcta, no necesita cambios
     const handleSearchSubmit = async (e) => {
         e.preventDefault();
@@ -123,13 +127,21 @@ const HomePage = ({ user }) => {
 
             <div className="video-grid">
                 {videos.map(video => (
-                    <div key={video.id} className="video-card">
-                        <a href={`https://www.youtube.com/watch?v=${video.id}`} target="_blank" rel="noopener noreferrer">
+                    // Modifica el onClick para llamar a openVideoLink con el objeto video
+                    <a
+                        key={video.id}
+                        href={`https://www.youtube.com/watch?v=${video.id}`} // Enlace directo a YouTube
+                        target="_blank" // Abre en una nueva pestaña
+                        rel="noopener noreferrer" // Mejora la seguridad
+                        className="video-card-link"
+                        onClick={() => openVideoLink(video)} // 👈 Llama a la nueva función
+                    >
+                        <div className="video-card">
                             <img src={video.thumbnail} alt={video.title} className="video-thumbnail" />
                             <h3 className="video-title">{video.title}</h3>
-                        </a>
-                        <p className="video-channel">{video.channelTitle}</p>
-                    </div>
+                            <p className="video-channel">{video.channelTitle}</p>
+                        </div>
+                    </a>
                 ))}
             </div>
         </div>

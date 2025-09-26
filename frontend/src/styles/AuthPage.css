@@ -37,7 +37,31 @@
     padding: var(--spacing-md);
     box-sizing: border-box;
 }
+/* frontend/src/AuthPage.css */
+/* ... (tus otros estilos) */
 
+.google-login-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.separator {
+    display: flex;
+    align-items: center;
+    color: #aaa;
+    width: 100%;
+}
+
+.separator::before, .separator::after {
+    content: '';
+    flex-grow: 1;
+    background-color: #ddd;
+    height: 1px;
+    margin: 0 10px;
+}
 /* Estilos para la tarjeta del formulario de autenticación */
 .auth-form-card {
     width: 100%;

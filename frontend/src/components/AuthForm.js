@@ -2,6 +2,7 @@
 import React from 'react';
 import miLogo from '../assets/images/LOGOGEOTUBEs.png';
 import { FaUser, FaEnvelope, FaLock, FaGlobe } from 'react-icons/fa';
+import { GoogleLogin } from '@react-oauth/google'; // 👈 Importa el componente de Google
 
 const AuthForm = ({
     isRegister,
@@ -11,20 +12,19 @@ const AuthForm = ({
     country, setCountry,
     onSubmit,
     message, error,
-    onToggleAuthMode
+    onToggleAuthMode,
+    onGoogleSuccess, // 👈 Nueva prop para el éxito
+    onGoogleFailure  // 👈 Nueva prop para el error
 }) => {
     return (
-        // Quitamos los estilos en línea del div principal
         <div className="auth-form-card">
             <img
               src={miLogo}
               alt="Logo de GeoTube"
-              className="auth-logo" // Usamos una clase CSS para el logo
+              className="auth-logo"
             />
-            {/* Quitamos estilos en línea del h2 */}
             <h2 className="auth-title">{isRegister ? 'Registrarse' : 'Iniciar Sesión'}</h2>
 
-            {/* Quitamos estilos en línea del form */}
             <form onSubmit={onSubmit} className="auth-form">
                 {isRegister && (
                     <>
@@ -74,15 +74,29 @@ const AuthForm = ({
                         required
                     />
                 </div>
-                {/* Botón de submit con clase CSS */}
                 <button type="submit" className="auth-submit-btn">
                     {isRegister ? 'Registrar' : 'Iniciar Sesión'}
                 </button>
             </form>
-            {/* Mensajes con clases CSS */}
+
+            {/* 👇 Sección para el Login con Google */}
+            <div className="google-login-container">
+                <div className="separator">
+                    <span>O</span>
+                </div>
+                <GoogleLogin
+                    onSuccess={onGoogleSuccess}
+                    onError={onGoogleFailure}
+                    useOneTap
+                    theme="filled_blue"
+                    shape="rectangular"
+                    width="300px" // Ajusta el ancho según tu diseño
+                />
+            </div>
+
             {message && <p className="auth-message success">{message}</p>}
             {error && <p className="auth-message error">{error}</p>}
-            {/* Botón de toggle con clase CSS */}
+            
             <button
                 onClick={onToggleAuthMode}
                 className="auth-toggle-btn"

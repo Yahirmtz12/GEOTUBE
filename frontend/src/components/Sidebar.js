@@ -28,7 +28,7 @@ const Sidebar = ({ isOpen, onClose, onLogout }) => {
                     {/* Icono FaFolder para Biblioteca y una ruta /library */}
                     <Link to="/library" onClick={onClose}>
                         <FaFolder />
-                        <span>Biblioteca</span>
+                        <span>Historial</span>
                     </Link>
                 </li>
                 

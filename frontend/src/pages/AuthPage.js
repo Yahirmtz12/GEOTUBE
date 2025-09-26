@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import AuthForm from '../components/AuthForm';
 import { useNavigate } from 'react-router-dom';
-import '../styles/AuthPage.css'; // 👈 Asegúrate de que esta línea esté presente
-
+import '../styles/AuthPage.css';
 
 const AuthPage = ({ setAuthToken }) => {
     const navigate = useNavigate();
@@ -52,6 +51,31 @@ const AuthPage = ({ setAuthToken }) => {
         setCountry('');
     };
 
+    // 👇 Función para manejar el éxito del login con Google
+    const handleGoogleSuccess = async (credentialResponse) => {
+        const idToken = credentialResponse.credential;
+        try {
+            // Envía el token de Google a tu backend para verificación y login/registro
+            const res = await axios.post(`${API_URL}/google`, {
+                token: idToken,
+            });
+
+            setMessage('Inicio de sesión con Google exitoso!');
+            localStorage.setItem('token', res.data.token); // Guarda el token de TU backend
+            setAuthToken(res.data.token);
+            navigate('/'); // Redirige a la página de inicio
+        } catch (err) {
+            console.error('Error en el login con Google:', err);
+            setError('No se pudo iniciar sesión con Google. Inténtalo de nuevo.');
+        }
+    };
+
+    // 👇 Función para manejar el error del login con Google
+    const handleGoogleFailure = () => {
+        console.error('El inicio de sesión con Google ha fallado.');
+        setError('El inicio de sesión con Google ha fallado. Por favor, intenta de nuevo.');
+    };
+
     return (
         <div className="auth-page-container">
             <AuthForm
@@ -63,6 +87,8 @@ const AuthPage = ({ setAuthToken }) => {
                 onSubmit={handleSubmit}
                 message={message} error={error}
                 onToggleAuthMode={handleToggleAuthMode}
+                onGoogleSuccess={handleGoogleSuccess} // 👈 Pasa la función de éxito
+                onGoogleFailure={handleGoogleFailure} // 👈 Pasa la función de error
             />
         </div>
     );

@@ -9,6 +9,8 @@ import HomePage from './pages/HomePage';
 import MyVideosPage from './pages/MyVideosPage';
 import ExplorePage from './pages/ExplorePage'; // 👈 1. Importa la nueva página
 import LibraryPage from './pages/LibraryPage'; // Hemos movido HomePage a su propio archivo
+import { GoogleOAuthProvider } from '@react-oauth/google'; // 👈 1. Importa el proveedor
+
 // Importa tus páginas futuras aquí:
 
 
@@ -100,10 +102,14 @@ function AppContent() {
 
 // Wrapper para usar useNavigate y otros hooks de react-router-dom
 function App() {
+    const googleClientId = "8303532805-087cjtan1s681791bel1d1f0u70qkgnr.apps.googleusercontent.com"; // 👈 2. Pega tu ID de Cliente aquí
+
     return (
-        <Router>
-            <AppContent />
-        </Router>
+        <GoogleOAuthProvider clientId={googleClientId}>
+            <Router>
+                <AppContent />
+            </Router>
+        </GoogleOAuthProvider>
     );
 }
 
