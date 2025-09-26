@@ -6,7 +6,9 @@ import axios from 'axios';
 import AuthPage from './pages/AuthPage';
 import Layout from './components/Layout'; // Nuevo componente Layout
 import HomePage from './pages/HomePage';
-import MyVideosPage from './pages/MyVideosPage'; // Hemos movido HomePage a su propio archivo
+import MyVideosPage from './pages/MyVideosPage';
+import ExplorePage from './pages/ExplorePage'; // 👈 1. Importa la nueva página
+import LibraryPage from './pages/LibraryPage'; // Hemos movido HomePage a su propio archivo
 // Importa tus páginas futuras aquí:
 
 
@@ -79,7 +81,8 @@ function AppContent() {
                 {authToken ? (
                     <>
                         <Route path="/" element={<HomePage user={user} />} />
-                        <Route path="/my-videos" element={<MyVideosPage />} />
+                        <Route path="/explore" element={<ExplorePage />} /> {/* 👈 3. Añade la ruta para Exploración */}
+                        <Route path="/library" element={<LibraryPage />} /> {/* 👈 4. Añade la ruta para Biblioteca */}
                         <Route path="*" element={<HomePage user={user} />} /> 
                     </>
                 ) : (
