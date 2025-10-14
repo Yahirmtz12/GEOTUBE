@@ -158,3 +158,12 @@
     font-size: 0.9em; /* Ligeramente más pequeño que el texto del título */
     vertical-align: middle; /* Ayuda a alinear verticalmente con el texto */
 }
+
+.age-badge {
+  background: red;
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  margin-left: 5px;
+  border-radius: 3px;
+}

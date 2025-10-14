@@ -1,112 +1,152 @@
 // frontend/src/pages/ExplorePage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { getUserLocation } from '../utils/location';
-import MapComponent from '../components/MapComponent'; // Importa el mapa
-import '../styles/ExplorePage.css'; // Crearemos este archivo de estilos
-import { addVideoToUserHistory } from '../utils/history'; // 👈 Importa la función
+import MapComponent from '../components/MapComponent';
+import '../styles/ExplorePage.css';
+import { addVideoToUserHistory } from '../utils/history';
+import LocationPermissionPanel from '../components/LocationPermissionPanel';
+import AgePrompt from '../components/AgePrompt';
+import VideoPlayer from '../components/VideoPlayer';
 
 const API_URL = 'http://localhost:5000/api';
 
 const ExplorePage = () => {
-    const [videos, setVideos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [locationName, setLocationName] = useState('tu ubicación');
-    const [mapCenter, setMapCenter] = useState(null); // Estado para las coordenadas del mapa
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [locationName, setLocationName] = useState('');
+  const [mapCenter, setMapCenter] = useState(null);
+  const [showPermissionPanel, setShowPermissionPanel] = useState(null);
+  const [selectedVideoId, setSelectedVideoId] = useState(null);
+  const [agePromptOpen, setAgePromptOpen] = useState(false);
+  const [pendingVideoToOpen, setPendingVideoToOpen] = useState(null);
 
-    const openVideoLink = (video) => {
-        addVideoToUserHistory(video); // 👈 Añade esta línea
-        window.open(`https://www.youtube.com/watch?v=${video.id}`, '_blank', 'noopener noreferrer');
-    };
-    // Función para obtener videos, la envolvemos en useCallback para optimización
-    const fetchVideosForLocation = useCallback(async (lat, lng) => {
-        setLoading(true);
-        setError('');
-        try {
-            // 1. Obtener nombre de la ubicación a partir de las coordenadas
-            const geoRes = await axios.get(`${API_URL}/location/geocode`, {
-                params: { lat, lon: lng }
-            });
-            const fetchedLocationName = geoRes.data.locationName;
-            setLocationName(fetchedLocationName);
+  const fetchVideosForLocation = useCallback(async (lat, lng) => {
+    setLoading(true);
+    setError('');
+    try {
+      const geoRes = await axios.get(`${API_URL}/location/geocode`, { params: { lat, lon: lng } });
+      const fetchedLocationName = geoRes.data.locationName;
+      setLocationName(fetchedLocationName);
 
-            // 2. Buscar videos para esa ubicación
-            const videoRes = await axios.get(`${API_URL}/videos/search`, {
-                params: { searchTerm: `videos de ${fetchedLocationName}`, maxResults: 15 }
-            });
-            setVideos(videoRes.data);
+      const videoRes = await axios.get(`${API_URL}/videos/search`, {
+        params: { searchTerm: 'videos', location: fetchedLocationName, maxResults: 15 },
+      });
+      setVideos(videoRes.data || []);
+    } catch (err) {
+      console.error('Error al cargar videos:', err);
+      setError('No se pudieron cargar los videos para esta ubicación.');
+      setVideos([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-        } catch (err) {
-            console.error('Error al cargar videos por ubicación:', err);
-            setError('No se pudieron cargar los videos para esta ubicación.');
-            setVideos([]);
-        } finally {
-            setLoading(false);
-        }
-    }, []); // El array vacío significa que esta función no se recreará en cada render
+  useEffect(() => {
+    const saved = localStorage.getItem('userLocation');
+    if (saved) {
+      const { latitude, longitude } = JSON.parse(saved);
+      setShowPermissionPanel(false);
+      setMapCenter({ lat: latitude, lng: longitude });
+      fetchVideosForLocation(latitude, longitude);
+    } else {
+      setShowPermissionPanel(true);
+    }
+  }, [fetchVideosForLocation]);
 
-    // Efecto para obtener la ubicación inicial del usuario
-    useEffect(() => {
-        const getInitialLocation = async () => {
-            try {
-                const { latitude, longitude } = await getUserLocation();
-                setMapCenter({ lat: latitude, lng: longitude });
-            } catch (error) {
-                console.error('Error obteniendo ubicación inicial:', error);
-                setError('No se pudo obtener tu ubicación inicial. Mostrando una ubicación por defecto.');
-                // Ubicación de fallback (ej. Ciudad de México)
-                setMapCenter({ lat: 19.4326, lng: -99.1332 });
-            }
-        };
-        getInitialLocation();
-    }, []); // Se ejecuta solo una vez al montar
+  const handlePermissionAccept = ({ latitude, longitude }) => {
+    localStorage.setItem('userLocation', JSON.stringify({ latitude, longitude }));
+    setShowPermissionPanel(false);
+    setMapCenter({ lat: latitude, lng: longitude });
+    fetchVideosForLocation(latitude, longitude);
+  };
 
-    // Efecto que se activa cuando el centro del mapa cambia
-    useEffect(() => {
-        if (mapCenter) {
-            fetchVideosForLocation(mapCenter.lat, mapCenter.lng);
-        }
-    }, [mapCenter, fetchVideosForLocation]); // Depende de mapCenter y de la función de fetch
+  const handlePermissionDeny = () => {
+    setShowPermissionPanel(false);
+    const lat = 19.4326,
+      lng = -99.1332;
+    setMapCenter({ lat, lng });
+    fetchVideosForLocation(lat, lng);
+  };
 
-    // Función que se pasará al mapa para manejar el movimiento
-    const handleMapMove = (newCenter) => {
-        setMapCenter(newCenter); // Actualiza el estado del centro del mapa
-    };
+  const handleOpenVideo = (video) => {
+    if (video.ageRestricted) {
+      setPendingVideoToOpen(video);
+      setAgePromptOpen(true);
+      return;
+    }
+    addVideoToUserHistory(video);
+    setSelectedVideoId(video.id);
+  };
 
-    return (
-        <div className="explore-container">
-            <div className="map-section">
-                <MapComponent center={mapCenter} onMapMove={handleMapMove} />
-            </div>
-            <div className="videos-section">
-                <h2 className="section-title">Explorando videos en: <br/><span className="location-highlight">{locationName}</span></h2>
-                
-                {loading && <p className="loading-message">Actualizando videos...</p>}
-                {error && <p className="error-message">{error}</p>}
-                
-                <div className="videos-list">
-                    {videos.map(video => (
-                        <div key={video.id} className="video-item">
-                            {/* Modifica el onClick para llamar a openVideoLink con el objeto video */}
-                            <a
-                                href={`https://www.youtube.com/watch?v=${video.id}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={() => openVideoLink(video)} // 👈 Llama a la nueva función
-                            >
-                                <img src={video.thumbnail} alt={video.title} className="video-thumbnail-small" />
-                                <div className="video-info">
-                                    <h4 className="video-title-small">{video.title}</h4>
-                                    <p className="video-channel-small">{video.channelTitle}</p>
-                                </div>
-                            </a>
-                        </div>
-                    ))}
+  const handleAgeConfirm = (isAdult) => {
+    setAgePromptOpen(false);
+    if (isAdult && pendingVideoToOpen) {
+      addVideoToUserHistory(pendingVideoToOpen);
+      setSelectedVideoId(pendingVideoToOpen.id);
+    } else {
+      alert('No puedes ver este video si no eres mayor de edad.');
+    }
+    setPendingVideoToOpen(null);
+  };
+
+  const handleAgeCancel = () => setAgePromptOpen(false);
+
+  const handleMapMove = (newCenter) => {
+    setMapCenter(newCenter);
+    fetchVideosForLocation(newCenter.lat, newCenter.lng);
+  };
+
+  const handleClosePlayer = () => setSelectedVideoId(null);
+
+  return (
+    <div className="explore-container">
+      {showPermissionPanel && (
+        <LocationPermissionPanel
+          isOpen={showPermissionPanel}
+          onAccept={handlePermissionAccept}
+          onDeny={handlePermissionDeny}
+        />
+      )}
+
+      <AgePrompt
+        isOpen={agePromptOpen}
+        onConfirm={handleAgeConfirm}
+        onCancel={handleAgeCancel}
+        videoTitle={pendingVideoToOpen ? pendingVideoToOpen.title : ''}
+      />
+
+      <VideoPlayer videoId={selectedVideoId} onClose={handleClosePlayer} />
+
+      <div className="map-section" style={{ height: '60vh' }}>
+        <MapComponent center={mapCenter} onMapMove={handleMapMove} />
+      </div>
+
+      <div className="videos-section">
+        <h2>
+          Explorando videos en: <span className="location-highlight">{locationName}</span>
+        </h2>
+        {loading && <p>Actualizando videos...</p>}
+        {error && <p className="error-message">{error}</p>}
+
+        <div className="videos-list">
+          {videos.map((video) => (
+            <div key={video.id} className="video-item">
+              <button className="video-link" onClick={() => handleOpenVideo(video)}>
+                <img src={video.thumbnail} alt={video.title} className="video-thumbnail-small" />
+                <div className="video-info">
+                  <h4>{video.title}</h4>
+                  <p className="video-channel">{video.channelTitle}</p>
+                  {video.ageRestricted && <span className="age-badge">+18</span>}
                 </div>
+              </button>
             </div>
+          ))}
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default ExplorePage;
+
