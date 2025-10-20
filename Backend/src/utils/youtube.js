@@ -4,9 +4,9 @@ const axios = require('axios');
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3';
 
-// --- CAMBIO AQUÍ ---
+
 // La función ahora acepta searchTerm y location
-async function searchYoutubeVideos(searchTerm, location, maxResults = 10) {
+async function searchYoutubeVideos(searchTerm, location, maxResults = 20) {
     if (!YOUTUBE_API_KEY) {
         throw new Error('La clave API de YouTube no está configurada.');
     }
@@ -47,31 +47,70 @@ async function searchYoutubeVideos(searchTerm, location, maxResults = 10) {
 
         // Mapear por id para combinar info
         const detailsById = {};
-        details.forEach(d => { detailsById[d.id] = d; });
+        details.forEach(d => {
+            detailsById[d.id] = d;
+        });
 
-        // Construir resultado final con flag ageRestricted
+        // Revisar restricciones adicionales para EE. UU. y Japón
+        const extraRegions = ['US', 'JP'];
+        for (const region of extraRegions) {
+            try {
+                const regionalDetails = await axios.get(`${YOUTUBE_API_URL}/videos`, {
+                    params: {
+                        key: YOUTUBE_API_KEY,
+                        id: ids,
+                        part: 'contentDetails',
+                        regionCode: region
+                    }
+                });
+
+                regionalDetails.data.items.forEach(d => {
+                    const id = d.id;
+                    const cr = d.contentDetails?.contentRating;
+                    if (
+                        cr?.ytRating === 'ytAgeRestricted' ||
+                        cr?.ageRestricted === true ||
+                        cr?.audiovisualRating === '18+'
+                    ) {
+                        if (!detailsById[id]) detailsById[id] = {};
+                        detailsById[id].ageRestricted = true;
+                    }
+                });
+            } catch (regionErr) {
+                console.warn(`No se pudieron obtener detalles para ${region}:`, regionErr.message);
+            }
+        }
+
+        // 4️⃣ Armar el resultado final combinando datos y bandera de edad
         const results = items.map(it => {
             const vidId = it.id.videoId;
-            const det = detailsById[vidId];
+            const det = detailsById[vidId] || {};
+            const snippet = det.snippet || it.snippet || {};
 
-            // seguridad por si no obtuvimos details
+            // Determinar si está restringido por edad
             let ageRestricted = false;
-            if (det && det.contentDetails && det.contentDetails.contentRating) {
-                const cr = det.contentDetails.contentRating;
-                // YouTube puede marcar con 'ytRating' = 'ytAgeRestricted' o con otras propiedades
-                if (cr.ytRating === 'ytAgeRestricted' || cr.ageRestricted === true || cr.audiovisualRating === '18+') {
-                    ageRestricted = true;
-                }
+            const cr = det.contentDetails?.contentRating;
+            if (
+                cr?.ytRating === 'ytAgeRestricted' ||
+                cr?.ageRestricted === true ||
+                cr?.audiovisualRating === '18+'
+            ) {
+                ageRestricted = true;
             }
 
-            const snippet = (det && det.snippet) ? det.snippet : (it.snippet || {});
-            const thumbnail = snippet.thumbnails && (snippet.thumbnails.high || snippet.thumbnails.default) ? (snippet.thumbnails.high?.url || snippet.thumbnails.default?.url) : null;
+            // O si se marcó durante la revisión regional
+            if (det.ageRestricted) ageRestricted = true;
+
+            const thumbnail =
+                snippet.thumbnails?.high?.url ||
+                snippet.thumbnails?.default?.url ||
+                '';
 
             return {
                 id: vidId,
                 title: snippet.title || it.snippet.title,
                 description: snippet.description || '',
-                thumbnail: thumbnail || '',
+                thumbnail,
                 channelTitle: snippet.channelTitle || '',
                 publishedAt: snippet.publishedAt || '',
                 ageRestricted
