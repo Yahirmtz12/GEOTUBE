@@ -11,7 +11,7 @@ import AgePrompt from '../components/AgePrompt';
 import VideoPlayer from '../components/VideoPlayer';
 import API_BASE_URL from '../utils/api';
 
-const API_URL = `${API_BASE_URL}/api/auth`;
+const API_URL = `${API_BASE_URL}/api`;
 
 const ExplorePage = () => {
   const [videos, setVideos] = useState([]);
