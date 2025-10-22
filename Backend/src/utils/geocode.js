@@ -44,8 +44,15 @@ async function reverseGeocode(latitude, longitude) {
         return { locationName, countryCode };
 
     } catch (error) {
-        console.error('Error al hacer geocodificación inversa:', error.message);
-        return { locationName: 'Mundo', countryCode: 'mx' }; 
+    console.error('Error al hacer geocodificación inversa DETALLADO:');
+    // Imprimir el objeto de error completo para ver todos los detalles
+    console.error(error); 
+    // Si es un error de Axios, `error.response` contendrá más detalles de la API
+    if (error.response) {
+        console.error('Respuesta de error de Nominatim API:', error.response.data);
+        console.error('Estado de error de Nominatim API:', error.response.status);
+    }
+    return { locationName: 'Mundo', countryCode: 'mx' }; 
     }
 }
 
