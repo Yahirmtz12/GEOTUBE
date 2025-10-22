@@ -19,7 +19,7 @@ async function reverseGeocode(latitude, longitude) {
                 'accept-language': 'es'
             },
             headers: {
-                'User-Agent': 'GeoTubeApp/1.0 (tu-email@example.com)' 
+                'User-Agent': 'GeoTubeApp/1.0 (21161600@itoaxaca.edu.mx)' 
             },
             timeout: 10000
         });
