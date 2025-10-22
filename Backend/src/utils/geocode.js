@@ -20,8 +20,10 @@ async function reverseGeocode(latitude, longitude) {
             },
             headers: {
                 'User-Agent': 'GeoTubeApp/1.0 (tu-email@example.com)' 
-            }
+            },
+            timeout: 10000
         });
+        
 
         const data = response.data;
         let locationName = 'Mundo';
