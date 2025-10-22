@@ -6,7 +6,7 @@ import '../styles/HomePage.css';
 import { addVideoToUserHistory } from '../utils/history';
 import AgePrompt from '../components/AgePrompt';
 import LocationPermissionPanel from '../components/LocationPermissionPanel';
-import API_BASE_URL from '../config/api';
+import API_BASE_URL from '../utils/api';
 
 import VideoPlayer from "../components/VideoPlayer";
 

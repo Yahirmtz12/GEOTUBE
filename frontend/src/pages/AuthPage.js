@@ -4,7 +4,7 @@ import axios from 'axios';
 import AuthForm from '../components/AuthForm';
 import { useNavigate } from 'react-router-dom';
 import '../styles/AuthPage.css';
-import API_BASE_URL from '../config/api';
+import API_BASE_URL from '../utils/api';
 
 const AuthPage = ({ setAuthToken }) => {
     const navigate = useNavigate();

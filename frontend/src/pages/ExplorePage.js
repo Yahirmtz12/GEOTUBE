@@ -9,7 +9,7 @@ import { addVideoToUserHistory } from '../utils/history';
 import LocationPermissionPanel from '../components/LocationPermissionPanel';
 import AgePrompt from '../components/AgePrompt';
 import VideoPlayer from '../components/VideoPlayer';
-import API_BASE_URL from '../config/api';
+import API_BASE_URL from '../utils/api';
 
 const API_URL = `${API_BASE_URL}/api/auth`;
 
