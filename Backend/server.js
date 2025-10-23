@@ -4,12 +4,12 @@ require('dotenv').config(); // Cargar variables de entorno al principio
 
 // --- CÓDIGO DE BUGSNAG - INICIO ---
 var Bugsnag = require('@bugsnag/js');
-var BugsnagPluginExpress = require('@bugsnag/plugin-express'); // <<< ¡AHORA SÍ, EL PLUGIN CORRECTO Y DESCOMENTADO!
+var BugsnagPluginExpress = require('@bugsnag/plugin-express'); // <<< Importación correcta del plugin
 
 // 1. Inicializa Bugsnag al principio de tu archivo principal.
 Bugsnag.start({
   apiKey: process.env.BUGSNAG_API_KEY, // Asegúrate de que esta variable esté en Render
-  plugins: [new BugsnagPluginExpress()], // <<< ¡DESCOMENTADO Y SE INSTANCIA EL PLUGIN!
+  plugins: [BugsnagPluginExpress], // <<< ¡CORREGIDO! PASA EL PLUGIN DIRECTAMENTE, SIN 'new'
   appType: 'backend', // Para identificar en Bugsnag que es tu backend
   releaseStage: process.env.NODE_ENV === 'production' ? 'production' : 'development', // 'production' en Render
   logger: { // Logger para depuración
@@ -21,7 +21,7 @@ Bugsnag.start({
 });
 
 // 2. Obtiene el middleware de Bugsnag para Express.
-var middleware = Bugsnag.getPlugin('express'); // <<< ¡DESCOMENTADO Y SE OBTIENE EL MIDDLEWARE REAL!
+var middleware = Bugsnag.getPlugin('express'); // Obtiene el middleware real
 // --- CÓDIGO DE BUGSNAG - FIN ---
 
 const express = require('express');
