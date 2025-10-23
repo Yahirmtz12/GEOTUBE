@@ -5,14 +5,11 @@ import { FaBars, FaUserCircle, FaSignOutAlt } from 'react-icons/fa';
 import miLogo from '../assets/images/LOGOGEOTUBE.jpg';
 
 // Importa Bugsnag para la notificación directa
-import Bugsnag from '@bugsnag/js';
+import Bugsnag from '@bugsnag/js'; // Asegúrate de que esta línea esté presente
 
 const Navbar = ({ user, onLogout, onToggleSidebar }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
-
-    // Estado para provocar el error de renderizado
-    const [triggerRenderError, setTriggerRenderError] = useState(false);
 
     const toggleDropdown = () => {
         setIsDropdownOpen(prev => !prev);
@@ -31,25 +28,19 @@ const Navbar = ({ user, onLogout, onToggleSidebar }) => {
         };
     }, []);
 
-    // Lógica para el error de renderizado
-    if (triggerRenderError) {
-        // Este error será capturado por el ErrorBoundary que envuelve AppWrapper en index.js
-        throw new Error('Bugsnag Test Error - Navbar Render Crash!');
-    }
-
-    // Lógica para la notificación directa
-    const handleDirectNotifyError = () => {
+    // >>> LÓGICA DE PRUEBA DE BUGSNAG - INICIO <<<
+    const handleTestBugsnagError = () => {
         try {
-            // Este error no detendrá la aplicación, solo lo notificará
-            throw new Error('Bugsnag Test Error - Navbar Direct Notification!');
+            // Este es el método exacto que mencionaste para probar:
+            Bugsnag.notify(new Error('Test error from Navbar direct notify'));
+            console.log("Error de prueba notificado a Bugsnag desde Navbar.");
+            alert("Error de prueba notificado a Bugsnag. Revisa el dashboard.");
         } catch (error) {
-            Bugsnag.notify(error, event => {
-                event.addMetadata('component', { name: 'Navbar', type: 'direct-notify' });
-            });
-            console.error("Error notificado directamente por Navbar:", error);
-            alert("Error directo notificado a Bugsnag. Revisa el dashboard.");
+            console.error("Fallo al notificar el error de prueba:", error);
+            alert("Error al intentar notificar a Bugsnag. Revisa la consola.");
         }
     };
+    // >>> LÓGICA DE PRUEBA DE BUGSNAG - FIN <<<
 
     return (
         <nav className="navbar">
@@ -63,20 +54,13 @@ const Navbar = ({ user, onLogout, onToggleSidebar }) => {
                 </Link>
             </div>
             <div className="navbar-right">
-                {/* Botones de prueba de Bugsnag */}
+                {/* Botón de prueba de Bugsnag para notificación directa */}
                 <button
-                    onClick={() => setTriggerRenderError(true)}
+                    onClick={handleTestBugsnagError}
                     className="navbar-btn"
-                    style={{ backgroundColor: 'darkred', color: 'white', marginRight: '10px' }}
+                    style={{ backgroundColor: 'darkgreen', color: 'white', marginRight: '10px' }}
                 >
-                    Crash Frontend
-                </button>
-                <button
-                    onClick={handleDirectNotifyError}
-                    className="navbar-btn"
-                    style={{ backgroundColor: 'darkorange', color: 'white', marginRight: '10px' }}
-                >
-                    Notify Error
+                    Test Bugsnag Notify
                 </button>
 
                 {user ? (
