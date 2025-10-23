@@ -1,21 +1,23 @@
 // frontend/src/components/Navbar.js
-import React, { useState, useRef, useEffect } from 'react'; // Importa useState, useRef, useEffect
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaBars, FaUserCircle, FaSignOutAlt } from 'react-icons/fa'; // Mantén solo los íconos necesarios
+import { FaBars, FaUserCircle, FaSignOutAlt } from 'react-icons/fa';
 import miLogo from '../assets/images/LOGOGEOTUBE.jpg';
 
+// Importa Bugsnag para la notificación directa
+import Bugsnag from '@bugsnag/js';
+
 const Navbar = ({ user, onLogout, onToggleSidebar }) => {
-    // Estado para controlar la visibilidad del menú desplegable
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    // Referencia para detectar clics fuera del dropdown
     const dropdownRef = useRef(null);
 
-    // Función para alternar la visibilidad del dropdown
+    // Estado para provocar el error de renderizado
+    const [triggerRenderError, setTriggerRenderError] = useState(false);
+
     const toggleDropdown = () => {
         setIsDropdownOpen(prev => !prev);
     };
 
-    // Efecto para cerrar el dropdown al hacer clic fuera de él
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -27,7 +29,27 @@ const Navbar = ({ user, onLogout, onToggleSidebar }) => {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, []); // Se ejecuta una sola vez al montar el componente
+    }, []);
+
+    // Lógica para el error de renderizado
+    if (triggerRenderError) {
+        // Este error será capturado por el ErrorBoundary que envuelve AppWrapper en index.js
+        throw new Error('Bugsnag Test Error - Navbar Render Crash!');
+    }
+
+    // Lógica para la notificación directa
+    const handleDirectNotifyError = () => {
+        try {
+            // Este error no detendrá la aplicación, solo lo notificará
+            throw new Error('Bugsnag Test Error - Navbar Direct Notification!');
+        } catch (error) {
+            Bugsnag.notify(error, event => {
+                event.addMetadata('component', { name: 'Navbar', type: 'direct-notify' });
+            });
+            console.error("Error notificado directamente por Navbar:", error);
+            alert("Error directo notificado a Bugsnag. Revisa el dashboard.");
+        }
+    };
 
     return (
         <nav className="navbar">
@@ -41,20 +63,31 @@ const Navbar = ({ user, onLogout, onToggleSidebar }) => {
                 </Link>
             </div>
             <div className="navbar-right">
+                {/* Botones de prueba de Bugsnag */}
+                <button
+                    onClick={() => setTriggerRenderError(true)}
+                    className="navbar-btn"
+                    style={{ backgroundColor: 'darkred', color: 'white', marginRight: '10px' }}
+                >
+                    Crash Frontend
+                </button>
+                <button
+                    onClick={handleDirectNotifyError}
+                    className="navbar-btn"
+                    style={{ backgroundColor: 'darkorange', color: 'white', marginRight: '10px' }}
+                >
+                    Notify Error
+                </button>
+
                 {user ? (
                     <div className="user-dropdown-container" ref={dropdownRef}>
-                        {/* El área clickable para el dropdown */}
                         <div className="user-info-clickable" onClick={toggleDropdown}>
                             <FaUserCircle className="user-icon" />
                             <span className="welcome-text">{user.username}</span>
                         </div>
 
-                        {/* El menú desplegable */}
                         {isDropdownOpen && (
                             <div className="dropdown-menu">
-                                {/* Puedes añadir más opciones aquí, como "Mi perfil", "Configuración", etc. */}
-                                {/* <li><Link to="/profile">Mi perfil</Link></li> */}
-                                {/* <li><Link to="/settings">Configuración</Link></li> */}
                                 <button onClick={onLogout} className="dropdown-logout-btn">
                                     <FaSignOutAlt />
                                     <span>Cerrar Sesión</span>
