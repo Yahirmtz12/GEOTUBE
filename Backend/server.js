@@ -74,14 +74,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/location', locationRoutes);
 app.use('/api/videos', videoRoutes);
 
-// --- RUTA DE PRUEBA PARA BUGSNAG ---
-app.get('/bugsnag-test-error', (req, res, next) => {
-    console.error("FORZANDO ERROR para Bugsnag Backend!");
-    // Este error será capturado por el middleware.errorHandler de Bugsnag
-    throw new Error("Bugsnag Test Error - Backend Express Route!");
-});
-// --- FIN RUTA DE PRUEBA ---
-
 // Ruta de prueba (original)
 app.get('/', (req, res) => {
     res.send('API de YouTube Geo en funcionamiento!');
