@@ -1,46 +1,50 @@
 /* frontend/src/components/WhatsAppButton.css */
 .whatsapp-button-float {
-  position: fixed; /* Lo hace flotante */
-  width: 60px; /* Ancho del botón */
-  height: 60px; /* Alto del botón */
-  bottom: 40px; /* Distancia desde abajo */
-  right: 40px; /* Distancia desde la derecha */
-  background-color: #25D366; /* Color verde de WhatsApp */
-  color: #FFF; /* Color del icono y texto */
-  border-radius: 50px; /* Hace el botón redondo */
+  position: fixed;
+  width: 60px;
+  height: 60px;
+  bottom: 40px;
+  right: 40px;
+  background-color: #25D366;
+  color: #FFF;
+  border-radius: 50px;
   text-align: center;
   font-size: 30px;
-  box-shadow: 2px 2px 3px #999; /* Sombra sutil */
-  z-index: 1000; /* Asegura que esté por encima de otros elementos */
-  display: flex; /* Para centrar el icono y texto */
-  align-items: center; /* Centrado vertical */
-  justify-content: center; /* Centrado horizontal */
-  text-decoration: none; /* Quita el subrayado del enlace */
-  transition: all 0.3s ease; /* Transición suave para hover */
-  overflow: hidden; /* Oculta el texto por defecto */
+  box-shadow: 2px 2px 3px #999;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centra el icono cuando no hay texto */
+  text-decoration: none;
+  transition: all 0.3s ease;
+  overflow: hidden; /* Sigue ocultando el texto cuando no está en hover */
 }
 
 .whatsapp-button-float:hover {
-  width: 180px; /* Expande el ancho en hover */
-  border-radius: 30px; /* Ajusta el radio en hover */
+  width: 180px; /* Se expande en hover */
+  border-radius: 30px;
   box-shadow: 2px 2px 8px #777;
+  /* Centra el contenido horizontalmente cuando hay espacio para el texto */
+  justify-content: flex-start; /* Alinea los elementos al inicio para hacer espacio al texto */
+  padding-left: 15px; /* Pequeño padding para que el icono no esté pegado al borde */
 }
 
 .whatsapp-icon {
-  margin-right: 0px; /* Sin margen a la derecha inicialmente */
-  transition: margin-right 0.3s ease;
+  /* El icono debe ser visible por defecto */
+  margin-right: 0; /* Aseguramos que no tenga margen derecho inicial que lo empuje */
+  transition: margin-right 0.3s ease; /* Transición para el movimiento en hover */
 }
 
 .whatsapp-text {
-  font-size: 18px; /* Tamaño del texto */
-  margin-left: 0; /* Sin margen a la izquierda inicialmente */
+  font-size: 18px;
+  margin-left: 0;
   opacity: 0; /* Oculto por defecto */
-  white-space: nowrap; /* Evita que el texto se rompa en línea */
+  white-space: nowrap;
   transition: opacity 0.3s ease, margin-left 0.3s ease;
 }
 
 .whatsapp-button-float:hover .whatsapp-icon {
-  margin-right: 10px; /* Mueve el icono a la izquierda en hover */
+  margin-right: 10px; /* Mueve el icono a la izquierda para hacer espacio al texto */
 }
 
 .whatsapp-button-float:hover .whatsapp-text {
