@@ -1,7 +1,7 @@
 // frontend/src/components/WhatsAppButton.js
 import React from 'react';
 import { FaWhatsapp } from 'react-icons/fa';
-import './WhatsAppButton.css';
+import '../styles/WhatsAppButton.css';
 
 const WhatsAppButton = ({ phoneNumber, message }) => {
   const encodedMessage = encodeURIComponent(message);
