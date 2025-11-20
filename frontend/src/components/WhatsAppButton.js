@@ -16,7 +16,7 @@ const WhatsAppButton = ({ phoneNumber, message }) => {
       aria-label="Enviar comentario por WhatsApp"
     >
       <FaWhatsapp className="whatsapp-icon" /> {/* El icono siempre estará aquí */}
-      <span className="whatsapp-text">FeedBack</span> {/* El texto aparecerá en hover */}
+      <span className="whatsapp-text">Comentarios</span> {/* El texto aparecerá en hover */}
     </a>
   );
 };
